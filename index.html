@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <script src="https://cdn.socket.io/4.5.3/socket.io.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #messages { list-style-type: none; padding: 0; }
+        #messages li { padding: 5px; border-bottom: 1px solid #ddd; }
+        #message-container { margin-top: 20px; }
+        .message { padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        .socket { background-color: #e0f7fa; }
+    </style>
+</head>
+<body>
+    <h1>Chat Application</h1>
+    <div id="message-container">
+        <h2>Socket.IO Messages</h2>
+        <ul id="socket-messages"></ul>
+    </div>
+
+    <script>
+        // Configuration
+        const socket = io('http://172.27.4.120:8001'); // URL server.js
+
+        // Socket.IO connection
+        socket.on('connect', () => {
+            console.log('Connected to Socket.IO server');
+        });
+
+        socket.on('chat-channel:message.sent', (data) => {
+            console.log('Socket.IO Data (chat-channel):', data); // Debug log
+            if (data && data.message) {
+                const message = data.message;
+                displayMessage('socket-messages', `${message}`, 'socket');
+            } else {
+                console.warn('Received data in unexpected format from Socket.IO (chat-channel):', data);
+            }
+        });
+
+        // Adding handler for laravel_database_chat-channel
+        socket.on('laravel_database_chat-channel:message.sent', (data) => {
+            console.log('Socket.IO Data (laravel_database_chat-channel):', data); // Debug log
+            if (data && data.message && data.message.message) {
+                const message = data.message.message;
+                displayMessage('socket-messages', `${message}`, 'socket');
+            } else {
+                console.warn('Received data in unexpected format from Socket.IO (laravel_database_chat-channel):', data);
+            }
+        });
+
+        function displayMessage(elementId, message, type) {
+            const messagesContainer = document.getElementById(elementId);
+            const li = document.createElement('li');
+            li.textContent = message;
+            li.className = `message ${type}`;
+            messagesContainer.appendChild(li);
+        }
+    </script>
+</body>
+</html>
